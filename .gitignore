@@ -1,0 +1,45 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Build output (if you later use build tools)
+dist/
+build/
+
+# Optional: ignore test reports
+test-output/
+*.test.js.snap
+
+# Optional: ignore lockfile if you want team-specific lockfiles
+# But generally it's better to keep it
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
