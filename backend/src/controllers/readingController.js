@@ -28,3 +28,74 @@ export const addReading = async (req, res) => {
     res.status(500).json({ error: "Failed to store reading" });
   }
 };
+
+export const getLatestReadings = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get all devices for this user with optimized fields
+    const devices = await Device.find({ userId })
+      .select("_id name")
+      .lean();
+    
+    if (!devices.length) {
+      return res.json([]);
+    }
+    
+    // Extract device IDs for bulk query
+    const deviceIds = devices.map(device => device._id);
+    
+    // Get latest readings for all devices in a single aggregation query
+    const latestReadings = await Reading.aggregate([
+      {
+        $match: {
+          deviceId: { $in: deviceIds }
+        }
+      },
+      {
+        $sort: { deviceId: 1, timestamp: -1 }
+      },
+      {
+        $group: {
+          _id: "$deviceId",
+          latestReading: { 
+            $first: {
+              // _id: "$_id",
+              // deviceId: "$deviceId",
+              timestamp: "$timestamp",
+              voltage: "$voltage",
+              current: "$current",
+              power: "$power",
+              energy: "$energy",
+              cost: "$cost"
+            }
+          }
+        }
+      }
+    ]);
+    
+    // Create a map for O(1) lookup
+    const readingsMap = new Map(
+      latestReadings.map(item => [
+        item._id.toString(), 
+        item.latestReading
+      ])
+    );
+    
+    // Combine device info with readings
+    const results = devices.map(device => ({
+      deviceId: device._id,
+      name: device.name,
+      latestReading: readingsMap.get(device._id.toString()) || null
+    }));
+    
+    res.json(results);
+    
+  } catch (error) {
+    console.error('Error fetching latest readings:', error);
+    res.status(500).json({ 
+      error: "Failed to fetch latest readings",
+      ...(process.env.NODE_ENV === 'development' && { details: error.message })
+    });
+  }
+};

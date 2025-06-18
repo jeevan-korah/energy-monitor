@@ -26,7 +26,6 @@ export const getAllDevice = async (req,res) =>{
     const userId = req.user._id;
     try {
       const devices = await Device.find({userId}).select("name")
-      console.log(devices)
       res.status(201).json(devices);
     } catch (error) {
       res.status(500).json({message : error.message});
